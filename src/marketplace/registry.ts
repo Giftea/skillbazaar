@@ -37,6 +37,15 @@ const SEED_SKILLS: RegisterSkillPayload[] = [
     category: "web3",
     port: 4003,
   },
+  {
+    name: "ens-resolver",
+    description: "Resolve ENS names to addresses or reverse lookup addresses to ENS names on Ethereum mainnet",
+    endpoint: "http://localhost:4004/resolve/:ensOrAddress",
+    price_usd: 0.02,
+    publisher_wallet: process.env.ADDRESS ?? "",
+    category: "web3",
+    port: 4004,
+  },
 ];
 
 // Public API

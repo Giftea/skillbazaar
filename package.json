@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "concurrently -n marketplace,skills,mcp,frontend -c cyan,magenta,yellow,green \"npm run dev:marketplace\" \"npm run dev:skills\" \"npm run dev:mcp\" \"npm run dev:frontend\"",
     "dev:marketplace": "nodemon --watch src --ext ts --exec tsx src/marketplace/server.ts",
-    "dev:skills": "tsx src/skills/contract-auditor.ts & tsx src/skills/wallet-scorer.ts & tsx src/skills/gas-estimator.ts",
+    "dev:skills": "tsx src/skills/contract-auditor.ts & tsx src/skills/wallet-scorer.ts & tsx src/skills/gas-estimator.ts & tsx src/skills/ens-resolver.ts",
     "dev:mcp": "tsx src/mcp/server.ts",
     "dev:frontend": "cd src/frontend && npm run dev",
     "demo": "tsx src/client/demo.ts",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "@noble/hashes": "^1.8.0",
     "better-sqlite3": "^9.4.3",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
