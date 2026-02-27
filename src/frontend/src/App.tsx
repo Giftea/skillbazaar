@@ -7,6 +7,7 @@ import AnalyticsPanel from './components/AnalyticsPanel';
 import RegisterModal from './components/RegisterModal';
 import ToastContainer from './components/Toast';
 import type { ToastItem } from './components/Toast';
+import ErrorBoundary from './components/ErrorBoundary';
 import type { Skill } from './types';
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Header onRegister={() => setShowRegister(true)} />
 
@@ -62,8 +64,14 @@ export default function App() {
 
       {error && (
         <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>⚠</div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{error}</div>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 13, marginBottom: 20 }}>{error}</div>
+          <button
+            className="try-btn"
+            onClick={() => { setError(null); setLoading(true); fetchSkills(); }}
+          >
+            ↺ Retry
+          </button>
         </div>
       )}
 
@@ -104,5 +112,6 @@ export default function App() {
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
+    </ErrorBoundary>
   );
 }

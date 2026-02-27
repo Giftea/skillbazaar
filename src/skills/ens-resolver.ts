@@ -25,11 +25,14 @@ if (!PAY_TO) {
 // JSON-RPC helpers
 
 async function jsonRpc<T = string>(method: string, params: unknown[]): Promise<T> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 8000);
   const res = await fetch(MAINNET_RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
+    signal: ctrl.signal,
+  }).finally(() => clearTimeout(timeout));
   const json = (await res.json()) as { result: T; error?: { message: string } };
   if (json.error) throw new Error(`RPC: ${json.error.message}`);
   return json.result;
@@ -111,13 +114,15 @@ server.add(
     method: "GET",
     price: "$0.02",
     handler: async (req: Request, res: Response) => {
-      const input = (req.params.ensOrAddress ?? "").trim();
-      const isEns = input.endsWith(".eth");
-      const isAddress = /^0x[0-9a-fA-F]{40}$/.test(input);
+      const rawInput = (req.params.ensOrAddress ?? "").trim();
+      const isEns = rawInput.endsWith(".eth");
+      const isAddress = /^0x[0-9a-fA-F]{40}$/.test(rawInput);
+      const input = isAddress ? rawInput.toLowerCase() : rawInput;
 
       if (!isEns && !isAddress) {
         res.status(400).json({
-          error: "Input must be an ENS name (ending in .eth) or a 0x EVM address (42 hex chars)",
+          error: "Invalid address format",
+          expected: "ENS name (e.g. vitalik.eth) or 0x + 40 hex chars",
         });
         return;
       }
@@ -174,8 +179,8 @@ server.add(
             resolved_at: new Date().toISOString(),
           });
         }
-      } catch (err) {
-        res.status(502).json({ error: `RPC error: ${(err as Error).message}` });
+      } catch {
+        res.status(503).json({ error: "RPC unavailable", fallback: true, message: "Could not reach Base network" });
       }
     },
   })
@@ -183,3 +188,4 @@ server.add(
 
 server.listen(4004);
 console.log("ENS Resolver skill running on port 4004");
+process.on('unhandledRejection', (err) => console.error('[ens-resolver] Unhandled:', err));

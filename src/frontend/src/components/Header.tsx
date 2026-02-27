@@ -1,8 +1,22 @@
+import { useState, useEffect } from 'react';
+
 interface Props {
   onRegister: () => void;
 }
 
+function useBalance(): string {
+  const [balance, setBalance] = useState<string | null>(null);
+  useEffect(() => {
+    fetch('/api/wallet/balance')
+      .then((r) => r.json())
+      .then((d: { balance_usdc?: string }) => setBalance(d.balance_usdc ?? '—'))
+      .catch(() => setBalance('—'));
+  }, []);
+  return balance ?? '…';
+}
+
 export default function Header({ onRegister }: Props) {
+  const balance = useBalance();
   return (
     <header style={{ borderBottom: '1px solid var(--border)', padding: '0 24px' }}>
       <div
@@ -60,6 +74,9 @@ export default function Header({ onRegister }: Props) {
             <div className="live-dot" />
             <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 500 }}>
               Base Mainnet
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
+              · {balance} USDC
             </span>
           </div>
         </div>

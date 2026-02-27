@@ -30,11 +30,14 @@ const GAS_UNITS = {
 
 // Gas estimation logic
 async function fetchGasEstimate(): Promise<GasEstimateResult> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 8000);
   const res = await fetch(BASE_RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_gasPrice", params: [] }),
-  });
+    signal: ctrl.signal,
+  }).finally(() => clearTimeout(timeout));
 
   const json = (await res.json()) as { result: string; error?: { message: string } };
   if (json.error) throw new Error(`RPC error: ${json.error.message}`);
@@ -73,8 +76,8 @@ server.add(
       try {
         const result = await fetchGasEstimate();
         res.json(result);
-      } catch (err) {
-        res.status(502).json({ error: `RPC call failed: ${(err as Error).message}` });
+      } catch {
+        res.status(503).json({ error: "RPC unavailable", fallback: true, message: "Could not reach Base network" });
       }
     },
   })
@@ -82,3 +85,4 @@ server.add(
 
 server.listen(4003);
 console.log("Gas Estimator skill running on port 4003");
+process.on('unhandledRejection', (err) => console.error('[gas-estimator] Unhandled:', err));

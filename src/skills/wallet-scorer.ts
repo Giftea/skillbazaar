@@ -22,11 +22,14 @@ if (!PAY_TO) {
 
 // Base RPC helper
 async function rpc<T = string>(method: string, params: unknown[]): Promise<T> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 8000);
   const res = await fetch(BASE_RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
+    signal: ctrl.signal,
+  }).finally(() => clearTimeout(timeout));
   const json = (await res.json()) as { result: T; error?: { message: string } };
   if (json.error) throw new Error(`RPC error: ${json.error.message}`);
   return json.result;
@@ -88,18 +91,18 @@ server.add(
     method: "GET",
     price: "$0.03",
     handler: async (req: Request, res: Response) => {
-      const { address } = req.params;
+      const address = (req.params.address ?? "").trim().toLowerCase();
 
       if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
-        res.status(400).json({ error: "Invalid address. Expected a 0x EVM address." });
+        res.status(400).json({ error: "Invalid address format", expected: "0x + 40 hex chars" });
         return;
       }
 
       try {
         const result = await scoreWallet(address);
         res.json(result);
-      } catch (err) {
-        res.status(502).json({ error: `RPC call failed: ${(err as Error).message}` });
+      } catch {
+        res.status(503).json({ error: "RPC unavailable", fallback: true, message: "Could not reach Base network" });
       }
     },
   })
@@ -107,3 +110,4 @@ server.add(
 
 server.listen(4002);
 console.log("Wallet Scorer skill running on port 4002");
+process.on('unhandledRejection', (err) => console.error('[wallet-scorer] Unhandled:', err));

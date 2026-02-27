@@ -23,49 +23,65 @@ const router = Router();
 // GET /
 // { name, version, total_skills }
 router.get("/", (_req: Request, res: Response) => {
-  const skills = getAllSkills();
-  res.json({
-    name: "SkillBazaar",
-    version: "1.0.0",
-    total_skills: skills.length,
-  });
+  try {
+    const skills = getAllSkills();
+    res.json({
+      name: "SkillBazaar",
+      version: "1.0.0",
+      total_skills: skills.length,
+    });
+  } catch {
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // GET /skills
 // { skills: [...], count: N }
 router.get("/skills", (_req: Request, res: Response) => {
-  const skills = getAllSkills();
-  res.json({ skills, count: skills.length });
+  try {
+    const skills = getAllSkills();
+    res.json({ skills, count: skills.length });
+  } catch {
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // GET /skills/:name/info
 // Full skill details including usage_count and endpoint template — must be
 // registered before /skills/:name to avoid :name swallowing "info" as a suffix
 router.get("/skills/:name/info", (req: Request, res: Response) => {
-  const skill = getSkillByName(req.params.name);
-  if (!skill) {
-    res.status(404).json({ error: "Skill not found" });
-    return;
+  try {
+    const skill = getSkillByName(req.params.name);
+    if (!skill) {
+      res.status(404).json({ error: "Skill not found" });
+      return;
+    }
+    incrementUsage(skill.name);
+    // Re-fetch so usage_count reflects the just-incremented value
+    const updated = getSkillByName(skill.name) as SkillRecord;
+    res.json({
+      ...updated,
+      endpoint_template: updated.endpoint,
+      endpoint_example: updated.endpoint.replace(":address", "0x1234...abcd"),
+    });
+  } catch {
+    res.status(500).json({ error: "Database error" });
   }
-  incrementUsage(skill.name);
-  // Re-fetch so usage_count reflects the just-incremented value
-  const updated = getSkillByName(skill.name) as SkillRecord;
-  res.json({
-    ...updated,
-    endpoint_template: updated.endpoint,
-    endpoint_example: updated.endpoint.replace(":address", "0x1234...abcd"),
-  });
 });
 
 // GET /skills/:name
 // Single skill or 404
 router.get("/skills/:name", (req: Request, res: Response) => {
-  const skill = getSkillByName(req.params.name);
-  if (!skill) {
-    res.status(404).json({ error: "Skill not found" });
-    return;
+  try {
+    const skill = getSkillByName(req.params.name);
+    if (!skill) {
+      res.status(404).json({ error: "Skill not found" });
+      return;
+    }
+    res.json(skill);
+  } catch {
+    res.status(500).json({ error: "Database error" });
   }
-  res.json(skill);
 });
 
 // POST /skills/register
@@ -89,17 +105,20 @@ router.post("/skills/register", (req: Request, res: Response) => {
     return;
   }
 
-  const skill = registerSkill({
-    name,
-    description,
-    endpoint,
-    price_usd: price,
-    publisher_wallet,
-    category,
-    port: Number(port),
-  });
-
-  res.status(201).json(skill);
+  try {
+    const skill = registerSkill({
+      name,
+      description,
+      endpoint,
+      price_usd: price,
+      publisher_wallet,
+      category,
+      port: Number(port),
+    });
+    res.status(201).json(skill);
+  } catch {
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // GET /wallet/balance
@@ -117,8 +136,8 @@ router.get("/wallet/balance", async (_req: Request, res: Response) => {
     const balance_usdc = balances?.USDC ?? String(d.usdc ?? "0");
 
     res.json({ balance_usdc, address });
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch wallet balance" });
   }
 });
 
@@ -148,10 +167,13 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
 
   try {
     const pinion = getPinion();
-    const result = await payX402Service(pinion.signer, url, {
-      method: "GET",
-      maxAmount,
-    });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Request timed out")), 10000)
+    );
+    const result = await Promise.race([
+      payX402Service(pinion.signer, url, { method: "GET", maxAmount }),
+      timeoutPromise,
+    ]);
 
     incrementUsage(skill.name);
 
@@ -161,7 +183,12 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
       skill: skill.name,
     });
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    const msg = (err as Error).message ?? "";
+    if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed") || msg.includes("ENOTFOUND")) {
+      res.status(503).json({ error: "Skill server offline", skill: skill.name, port: skill.port });
+      return;
+    }
+    res.status(500).json({ error: "Execution failed" });
   }
 });
 
@@ -189,36 +216,40 @@ router.get("/skills/:name/health", async (req: Request, res: Response) => {
 // GET /analytics
 // Aggregated marketplace statistics derived live from the registry
 router.get("/analytics", (_req: Request, res: Response) => {
-  const skills = getAllSkills();
+  try {
+    const skills = getAllSkills();
 
-  const total_skills = skills.length;
-  const total_calls = skills.reduce((sum, s) => sum + s.usage_count, 0);
-  const total_revenue_usd = parseFloat(
-    skills.reduce((sum, s) => sum + s.usage_count * s.price_usd, 0).toFixed(4)
-  );
+    const total_skills = skills.length;
+    const total_calls = skills.reduce((sum, s) => sum + s.usage_count, 0);
+    const total_revenue_usd = parseFloat(
+      skills.reduce((sum, s) => sum + s.usage_count * s.price_usd, 0).toFixed(4)
+    );
 
-  const top_skills = [...skills]
-    .sort((a, b) => b.usage_count - a.usage_count)
-    .slice(0, 3)
-    .map((s) => ({
-      name: s.name,
-      usage_count: s.usage_count,
-      revenue_usd: parseFloat((s.usage_count * s.price_usd).toFixed(4)),
-    }));
+    const top_skills = [...skills]
+      .sort((a, b) => b.usage_count - a.usage_count)
+      .slice(0, 3)
+      .map((s) => ({
+        name: s.name,
+        usage_count: s.usage_count,
+        revenue_usd: parseFloat((s.usage_count * s.price_usd).toFixed(4)),
+      }));
 
-  const categories: Record<string, number> = {};
-  for (const s of skills) {
-    categories[s.category] = (categories[s.category] ?? 0) + 1;
+    const categories: Record<string, number> = {};
+    for (const s of skills) {
+      categories[s.category] = (categories[s.category] ?? 0) + 1;
+    }
+
+    res.json({
+      total_skills,
+      total_calls,
+      total_revenue_usd,
+      top_skills,
+      categories,
+      last_updated: new Date().toISOString(),
+    });
+  } catch {
+    res.status(500).json({ error: "Database error" });
   }
-
-  res.json({
-    total_skills,
-    total_calls,
-    total_revenue_usd,
-    top_skills,
-    categories,
-    last_updated: new Date().toISOString(),
-  });
 });
 
 export default router;

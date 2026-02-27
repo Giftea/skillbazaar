@@ -95,7 +95,13 @@ export default function SkillCard({ skill, onClick }: Props) {
         <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>
           {skill.usage_count} calls · port {skill.port}
         </div>
-        <button className="try-btn" onClick={(e) => { e.stopPropagation(); onClick(); }}>
+        <button
+          className="try-btn"
+          disabled={online === false}
+          title={online === false ? 'Skill server is currently offline' : undefined}
+          style={online === false ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+          onClick={(e) => { e.stopPropagation(); if (online !== false) onClick(); }}
+        >
           {needsParam ? '⚡ Try It' : '⚡ Run'}
         </button>
       </div>

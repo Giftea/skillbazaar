@@ -8,6 +8,13 @@ import {
 
 const MARKETPLACE = "http://localhost:3000";
 
+// Fetch with 8s timeout — prevents the MCP process from hanging
+async function fetchWithTimeout(url: string, opts: RequestInit = {}): Promise<Response> {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 8000);
+  return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(timeout));
+}
+
 interface SkillRecord {
   name: string;
   description: string;
@@ -92,7 +99,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       // list_skills 
       case "list_skills": {
-        const res = await fetch(`${MARKETPLACE}/skills`);
+        const res = await fetchWithTimeout(`${MARKETPLACE}/skills`);
         if (!res.ok) throw new Error(`Marketplace returned HTTP ${res.status}`);
         const data = (await res.json()) as { skills: SkillRecord[]; count: number };
 
@@ -120,7 +127,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const skillName = a.skill_name;
         if (!skillName) throw new Error("skill_name is required");
 
-        const res = await fetch(`${MARKETPLACE}/skills/${encodeURIComponent(skillName)}`);
+        const res = await fetchWithTimeout(`${MARKETPLACE}/skills/${encodeURIComponent(skillName)}`);
         if (res.status === 404) {
           return {
             content: [{ type: "text" as const, text: `Skill "${skillName}" not found.` }],
@@ -156,7 +163,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const skillName = a.skill_name;
         if (!skillName) throw new Error("skill_name is required");
 
-        const res = await fetch(
+        const res = await fetchWithTimeout(
           `${MARKETPLACE}/skills/${encodeURIComponent(skillName)}/execute`,
           {
             method: "POST",
@@ -194,7 +201,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // check_balance 
       case "check_balance": {
-        const res = await fetch(`${MARKETPLACE}/wallet/balance`);
+        const res = await fetchWithTimeout(`${MARKETPLACE}/wallet/balance`);
         const data = (await res.json()) as {
           balance_usdc: string;
           address: string;
@@ -225,14 +232,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
     }
   } catch (err) {
+    const msg = (err as Error).message ?? "";
+    const isOffline = msg.includes("ECONNREFUSED") || msg.includes("fetch failed") || msg.includes("ENOTFOUND") || msg.includes("aborted");
+    const text = isOffline
+      ? "SkillBazaar marketplace is not running. Start it with: npm run dev:marketplace"
+      : `Error: ${msg}`;
     return {
-      content: [
-        { type: "text" as const, text: `Error: ${(err as Error).message}` },
-      ],
+      content: [{ type: "text" as const, text }],
       isError: true,
     };
   }
 });
+
+process.on('unhandledRejection', (err) => console.error('[skillbazaar-mcp] Unhandled:', err));
+process.on('uncaughtException', (err) => console.error('[skillbazaar-mcp] Uncaught:', err));
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
