@@ -27,7 +27,7 @@ program
   .description("SkillBazaar CLI — publish and browse on-chain skills")
   .version("1.0.0");
 
-// ── skillbazaar publish ─────────────────────────────────────────────────────
+// skillbazaar publish
 
 program
   .command("publish")
@@ -112,7 +112,7 @@ program
     const portMatch = (answers.server_url as string).match(/:(\d+)/);
     const port = portMatch ? parseInt(portMatch[1], 10) : 80;
 
-    // ── Summary ────────────────────────────────────────────────────────────
+    // Summary 
     console.log();
     console.log(chalk.bold("  Review your skill:"));
     console.log(chalk.dim("  ─────────────────────────────────────────"));
@@ -138,7 +138,7 @@ program
       process.exit(0);
     }
 
-    // ── POST to marketplace ────────────────────────────────────────────────
+    //  POST to marketplace 
     console.log();
     const spinner = ora({ text: "Registering skill…", color: "cyan" }).start();
 
@@ -185,7 +185,7 @@ program
     }
   });
 
-// ── skillbazaar list ────────────────────────────────────────────────────────
+// skillbazaar list
 
 program
   .command("list")
@@ -232,7 +232,7 @@ program
     }
   });
 
-// ── skillbazaar info <skillName> ────────────────────────────────────────────
+//  skillbazaar info <skillName> 
 
 program
   .command("info <skillName>")
@@ -273,7 +273,7 @@ program
     }
   });
 
-// ── skillbazaar balance ─────────────────────────────────────────────────────
+// skillbazaar balance
 
 program
   .command("balance")

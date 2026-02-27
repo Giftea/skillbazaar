@@ -281,8 +281,42 @@ a:hover { text-decoration: underline; }
 .json-bool   { color: #f472b6; }
 .json-null   { color: var(--text-muted); }
 
+/* ── Bar chart ── */
+@keyframes bar-grow {
+  from { width: 0%; }
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 64px;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-label {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: bar-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .skills-grid, .loading-grid { grid-template-columns: 1fr; padding: 16px; }
   .modal { max-height: 100vh; border-radius: 0; }
+  .bar-row { grid-template-columns: 120px 1fr 48px; gap: 8px; }
 }

@@ -11,6 +11,15 @@ export interface Skill {
   created_at: string;
 }
 
+export interface Analytics {
+  total_skills: number;
+  total_calls: number;
+  total_revenue_usd: number;
+  top_skills: Array<{ name: string; usage_count: number; revenue_usd: number }>;
+  categories: Record<string, number>;
+  last_updated: string;
+}
+
 export interface ExecuteResult {
   skill: string;
   param: string | null;

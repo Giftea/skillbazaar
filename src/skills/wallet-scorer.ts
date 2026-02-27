@@ -20,9 +20,7 @@ if (!PAY_TO) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------------------
 // Base RPC helper
-// ---------------------------------------------------------------------------
 async function rpc<T = string>(method: string, params: unknown[]): Promise<T> {
   const res = await fetch(BASE_RPC, {
     method: "POST",
@@ -41,9 +39,7 @@ function encodeBalanceOf(address: string): string {
   return `0x${selector}${paddedAddress}`;
 }
 
-// ---------------------------------------------------------------------------
 // Scoring logic
-// ---------------------------------------------------------------------------
 async function scoreWallet(address: string): Promise<WalletScoreResult> {
   const [balanceHex, txCountHex, usdcHex] = await Promise.all([
     rpc<string>("eth_getBalance", [address, "latest"]),
@@ -82,9 +78,7 @@ async function scoreWallet(address: string): Promise<WalletScoreResult> {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Skill server
-// ---------------------------------------------------------------------------
 const server = createSkillServer({ payTo: PAY_TO, network: "base", cors: true });
 
 server.add(

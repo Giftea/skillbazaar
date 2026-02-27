@@ -12,7 +12,7 @@ import type { GasEstimateResult } from "../shared/types.js";
 import { Request, Response } from "express";
 
 const BASE_RPC = "https://mainnet.base.org";
-const ETH_PRICE_USD = 3200; // approximate; replace with a price oracle if needed
+const ETH_PRICE_USD = 3200;
 
 const PAY_TO = process.env.ADDRESS ?? "";
 
@@ -28,9 +28,7 @@ const GAS_UNITS = {
   nft_mint: 150_000,
 } as const;
 
-// ---------------------------------------------------------------------------
 // Gas estimation logic
-// ---------------------------------------------------------------------------
 async function fetchGasEstimate(): Promise<GasEstimateResult> {
   const res = await fetch(BASE_RPC, {
     method: "POST",
@@ -62,9 +60,7 @@ async function fetchGasEstimate(): Promise<GasEstimateResult> {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Skill server
-// ---------------------------------------------------------------------------
 const server = createSkillServer({ payTo: PAY_TO, network: "base", cors: true });
 
 server.add(

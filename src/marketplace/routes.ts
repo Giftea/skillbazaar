@@ -8,7 +8,6 @@ import {
 } from "./registry.js";
 import type { SkillRecord, RegisterSkillPayload } from "../shared/types.js";
 
-// Lazily created so server startup doesn't fail if PINION_PRIVATE_KEY isn't set
 let _pinion: PinionClient | null = null;
 function getPinion(): PinionClient {
   if (!_pinion) {
@@ -164,6 +163,41 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
+});
+
+// GET /analytics
+// Aggregated marketplace statistics derived live from the registry
+router.get("/analytics", (_req: Request, res: Response) => {
+  const skills = getAllSkills();
+
+  const total_skills = skills.length;
+  const total_calls = skills.reduce((sum, s) => sum + s.usage_count, 0);
+  const total_revenue_usd = parseFloat(
+    skills.reduce((sum, s) => sum + s.usage_count * s.price_usd, 0).toFixed(4)
+  );
+
+  const top_skills = [...skills]
+    .sort((a, b) => b.usage_count - a.usage_count)
+    .slice(0, 3)
+    .map((s) => ({
+      name: s.name,
+      usage_count: s.usage_count,
+      revenue_usd: parseFloat((s.usage_count * s.price_usd).toFixed(4)),
+    }));
+
+  const categories: Record<string, number> = {};
+  for (const s of skills) {
+    categories[s.category] = (categories[s.category] ?? 0) + 1;
+  }
+
+  res.json({
+    total_skills,
+    total_calls,
+    total_revenue_usd,
+    top_skills,
+    categories,
+    last_updated: new Date().toISOString(),
+  });
 });
 
 export default router;

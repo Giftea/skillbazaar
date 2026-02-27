@@ -17,7 +17,6 @@ export default function Header() {
           gap: 16,
         }}
       >
-        {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
@@ -50,7 +49,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Network badge */}
         <div
           style={{
             display: 'flex',

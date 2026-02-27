@@ -3,6 +3,7 @@ import Header from './components/Header';
 import StatsBar from './components/StatsBar';
 import SkillCard from './components/SkillCard';
 import TryItModal from './components/TryItModal';
+import AnalyticsPanel from './components/AnalyticsPanel';
 import type { Skill } from './types';
 
 export default function App() {
@@ -46,15 +47,29 @@ export default function App() {
       )}
 
       {!loading && !error && (
-        <div className="skills-grid">
-          {skills.map((skill) => (
-            <SkillCard
-              key={skill.id}
-              skill={skill}
-              onClick={() => setSelectedSkill(skill)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="skills-grid">
+            {skills.map((skill) => (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                onClick={() => setSelectedSkill(skill)}
+              />
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div
+            style={{
+              maxWidth: 1100,
+              margin: '8px auto 24px',
+              padding: '0 24px',
+              borderTop: '1px solid var(--border)',
+            }}
+          />
+
+          <AnalyticsPanel skills={skills} />
+        </>
       )}
 
       {selectedSkill && (

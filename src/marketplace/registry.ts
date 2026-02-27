@@ -8,9 +8,7 @@ const DB_PATH = path.resolve(__dirname, "../../data/skills.db");
 
 let db: Database.Database;
 
-// ---------------------------------------------------------------------------
 // Seeds
-// ---------------------------------------------------------------------------
 const SEED_SKILLS: RegisterSkillPayload[] = [
   {
     name: "contract-auditor",
@@ -41,9 +39,7 @@ const SEED_SKILLS: RegisterSkillPayload[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
 // Public API
-// ---------------------------------------------------------------------------
 
 export function initDB(): void {
   db = new Database(DB_PATH);

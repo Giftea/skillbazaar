@@ -54,7 +54,6 @@ export default function TryItModal({ skill, onClose }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="modal-header">
           <div>
             <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 16 }}>
@@ -67,9 +66,7 @@ export default function TryItModal({ skill, onClose }: Props) {
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
-        {/* Body */}
         <div className="modal-body">
-          {/* Meta row */}
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>Price</div>
@@ -89,7 +86,6 @@ export default function TryItModal({ skill, onClose }: Props) {
             </div>
           </div>
 
-          {/* Address input */}
           {needsAddress && (
             <div>
               <label
@@ -110,14 +106,12 @@ export default function TryItModal({ skill, onClose }: Props) {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div style={{ fontSize: 12, color: 'var(--red)', fontFamily: 'var(--mono)' }}>
               ⚠ {error}
             </div>
           )}
 
-          {/* Execute button */}
           <button className="pay-btn" onClick={execute} disabled={loading}>
             {loading ? (
               <>
@@ -129,7 +123,6 @@ export default function TryItModal({ skill, onClose }: Props) {
             )}
           </button>
 
-          {/* Result */}
           {result && (
             <div>
               <div

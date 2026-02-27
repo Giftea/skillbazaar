@@ -22,18 +22,16 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------------------
-// Balance helper — handles both a successful response and a 402 (no funds)
-// ---------------------------------------------------------------------------
+
+//  handles both a successful response and a 402 (no funds)
 type BalanceSnapshot = { usdc: string; eth: string } | null;
 
 function extractBalance(res: { status: number; data: unknown }): BalanceSnapshot {
   if (res.status !== 200) return null;
   const d = res.data as Record<string, unknown>;
-  // The SDK types say data.balances.{ETH,USDC}; confirmed from BalanceResult
   const bal = d?.balances as Record<string, string> | undefined;
   if (bal?.ETH !== undefined) return { eth: bal.ETH, usdc: bal.USDC };
-  // Fallback: flat lowercase shape (documented example)
+
   return {
     eth: String(d?.eth ?? "0"),
     usdc: String(d?.usdc ?? "0"),
@@ -50,9 +48,8 @@ function logBalance(snap: BalanceSnapshot) {
   }
 }
 
-// ---------------------------------------------------------------------------
+
 // Main
-// ---------------------------------------------------------------------------
 async function main() {
   console.log("\nSkillBazaar Demo");
   console.log("=".repeat(40));
@@ -60,14 +57,14 @@ async function main() {
   const pinion = new PinionClient({ privateKey: PRIVATE_KEY });
   console.log(`Wallet: ${pinion.address}\n`);
 
-  // ── Step 1: Check Balance ────────────────────────────────────────────────
+  //  Step 1: Check Balance 
   console.log("=== Step 1: Check Balance ===");
   const balanceBefore = await pinion.skills.balance(pinion.address);
   const snapBefore = extractBalance(balanceBefore);
   logBalance(snapBefore);
   console.log();
 
-  // ── Step 2: Browse Marketplace ──────────────────────────────────────────
+  //  Step 2: Browse Marketplace 
   console.log("=== Step 2: Browse Marketplace ===");
   let skills: SkillRecord[] = [];
   try {
@@ -91,7 +88,7 @@ async function main() {
     process.exit(1);
   }
 
-  // ── Step 3: Call gas-estimator skill ────────────────────────────────────
+  //  Step 3: Call gas-estimator skill 
   console.log("=== Step 3: Call gas-estimator Skill ===");
   const GAS_SKILL_URL = "http://localhost:4003/gas";
   console.log(`  Endpoint : ${GAS_SKILL_URL}`);
@@ -100,7 +97,7 @@ async function main() {
   try {
     const result = await payX402Service(pinion.signer, GAS_SKILL_URL, {
       method: "GET",
-      maxAmount: "20000", // $0.02 USDC (6 decimals: 20000 / 1e6 = 0.02)
+      maxAmount: "20000",
     });
 
     const paidUsd = (parseInt(result.paidAmount) / 1e6).toFixed(4);
@@ -113,7 +110,7 @@ async function main() {
     console.error("  Make sure gas-estimator is running: npm run dev:skills\n");
   }
 
-  // ── Step 4: Final Balance ────────────────────────────────────────────────
+  //  Step 4: Final Balance 
   console.log("=== Step 4: Final Balance ===");
   const balanceAfter = await pinion.skills.balance(pinion.address);
   const snapAfter = extractBalance(balanceAfter);

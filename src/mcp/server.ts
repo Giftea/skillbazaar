@@ -25,7 +25,7 @@ const server = new Server(
   { capabilities: { tools: {} } }
 );
 
-// ── Tool definitions ────────────────────────────────────────────────────────
+// Tool definitions
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
@@ -82,7 +82,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   ],
 }));
 
-// ── Tool handlers ───────────────────────────────────────────────────────────
+// Tool handlers
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
@@ -90,7 +90,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
-      // ── list_skills ────────────────────────────────────────────────────
+      // list_skills 
       case "list_skills": {
         const res = await fetch(`${MARKETPLACE}/skills`);
         if (!res.ok) throw new Error(`Marketplace returned HTTP ${res.status}`);
@@ -115,7 +115,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      // ── get_skill_info ─────────────────────────────────────────────────
+      // get_skill_info 
       case "get_skill_info": {
         const skillName = a.skill_name;
         if (!skillName) throw new Error("skill_name is required");
@@ -151,7 +151,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      // ── execute_skill ──────────────────────────────────────────────────
+      // execute_skill 
       case "execute_skill": {
         const skillName = a.skill_name;
         if (!skillName) throw new Error("skill_name is required");
@@ -192,7 +192,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      // ── check_balance ──────────────────────────────────────────────────
+      // check_balance 
       case "check_balance": {
         const res = await fetch(`${MARKETPLACE}/wallet/balance`);
         const data = (await res.json()) as {
@@ -233,8 +233,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
   }
 });
-
-// ── Start ───────────────────────────────────────────────────────────────────
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

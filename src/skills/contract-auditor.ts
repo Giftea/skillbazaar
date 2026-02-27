@@ -19,9 +19,7 @@ if (!PAY_TO) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------------------
 // Base RPC helper
-// ---------------------------------------------------------------------------
 async function rpc<T = string>(method: string, params: unknown[]): Promise<T> {
   const res = await fetch(BASE_RPC, {
     method: "POST",
@@ -37,9 +35,7 @@ function hexToEth(hex: string): string {
   return (parseInt(hex, 16) / 1e18).toFixed(6);
 }
 
-// ---------------------------------------------------------------------------
 // Audit logic
-// ---------------------------------------------------------------------------
 async function auditAddress(address: string): Promise<ContractAuditResult> {
   const [balanceHex, txCountHex, bytecode] = await Promise.all([
     rpc<string>("eth_getBalance", [address, "latest"]),
@@ -94,9 +90,7 @@ async function auditAddress(address: string): Promise<ContractAuditResult> {
   };
 }
 
-// ---------------------------------------------------------------------------
 // Skill server
-// ---------------------------------------------------------------------------
 const server = createSkillServer({ payTo: PAY_TO, network: "base", cors: true });
 
 server.add(

@@ -32,7 +32,6 @@ export default function SkillCard({ skill, onClick }: Props) {
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
     >
-      {/* Top row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <span className={`badge ${categoryClass}`}>{skill.category}</span>
         <span
@@ -47,7 +46,7 @@ export default function SkillCard({ skill, onClick }: Props) {
         </span>
       </div>
 
-      {/* Name */}
+
       <div
         style={{
           fontFamily: 'var(--mono)',
@@ -60,7 +59,6 @@ export default function SkillCard({ skill, onClick }: Props) {
         {skill.name}
       </div>
 
-      {/* Description */}
       <div
         style={{
           fontSize: 13,
@@ -73,7 +71,6 @@ export default function SkillCard({ skill, onClick }: Props) {
         {skill.description}
       </div>
 
-      {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>
           {skill.usage_count} calls · port {skill.port}
