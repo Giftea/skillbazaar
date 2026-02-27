@@ -88,17 +88,30 @@ async function main() {
     process.exit(1);
   }
 
-  //  Step 3: Call gas-estimator skill 
+  //  Step 3: Call gas-estimator skill
   console.log("=== Step 3: Call gas-estimator Skill ===");
   const GAS_SKILL_URL = "http://localhost:4003/gas";
   console.log(`  Endpoint : ${GAS_SKILL_URL}`);
   console.log("  Paying   : $0.02 USDC via x402...\n");
 
+  async function payGasSkill() {
+    return payX402Service(pinion.signer, GAS_SKILL_URL, { method: "GET", maxAmount: "20000" });
+  }
+
   try {
-    const result = await payX402Service(pinion.signer, GAS_SKILL_URL, {
-      method: "GET",
-      maxAmount: "20000",
-    });
+    let result;
+    try {
+      result = await payGasSkill();
+    } catch (firstErr) {
+      const msg = (firstErr as Error).message ?? "";
+      if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed") || msg.includes("ENOTFOUND")) {
+        console.log("  ⚠️  Payment failed, retrying in 2s...");
+        await new Promise((r) => setTimeout(r, 2000));
+        result = await payGasSkill();
+      } else {
+        throw firstErr;
+      }
+    }
 
     const paidUsd = (parseInt(result.paidAmount) / 1e6).toFixed(4);
     console.log(`  Paid: $${paidUsd} USDC  (${result.responseTimeMs}ms)\n`);

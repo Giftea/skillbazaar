@@ -86,3 +86,5 @@ server.add(
 server.listen(4003);
 console.log("Gas Estimator skill running on port 4003");
 process.on('unhandledRejection', (err) => console.error('[gas-estimator] Unhandled:', err));
+process.on('SIGTERM', () => { console.log('[gas-estimator] Shutting down...'); process.exit(0); });
+process.on('SIGINT',  () => { console.log('[gas-estimator] Shutting down...'); process.exit(0); });

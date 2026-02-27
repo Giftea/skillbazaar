@@ -25,8 +25,16 @@ app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
   console.log(`SkillBazaar marketplace running on http://localhost:${PORT}`);
 });
 
+const shutdown = (signal: string) => {
+  console.log(`[marketplace] ${signal} received, shutting down...`);
+  httpServer.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 5000).unref();
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
 process.on('unhandledRejection', (err) => console.error('[marketplace] Unhandled:', err));

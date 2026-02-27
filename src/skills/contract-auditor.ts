@@ -123,3 +123,5 @@ server.add(
 server.listen(4001);
 console.log("Contract Auditor skill running on port 4001");
 process.on('unhandledRejection', (err) => console.error('[contract-auditor] Unhandled:', err));
+process.on('SIGTERM', () => { console.log('[contract-auditor] Shutting down...'); process.exit(0); });
+process.on('SIGINT',  () => { console.log('[contract-auditor] Shutting down...'); process.exit(0); });

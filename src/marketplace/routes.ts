@@ -18,6 +18,18 @@ function getPinion(): PinionClient {
   return _pinion;
 }
 
+// Simple in-memory cache
+interface CacheEntry<T = unknown> { data: T; ts: number; }
+const _cache = new Map<string, CacheEntry>();
+function fromCache<T>(key: string, ttlMs: number): T | null {
+  const e = _cache.get(key);
+  if (e && Date.now() - e.ts < ttlMs) return e.data as T;
+  return null;
+}
+function setCache(key: string, data: unknown): void {
+  _cache.set(key, { data, ts: Date.now() });
+}
+
 const router = Router();
 
 // GET /
@@ -38,9 +50,18 @@ router.get("/", (_req: Request, res: Response) => {
 // GET /skills
 // { skills: [...], count: N }
 router.get("/skills", (_req: Request, res: Response) => {
+  const cached = fromCache<{ skills: SkillRecord[]; count: number }>("skills", 5_000);
+  if (cached) {
+    res.set("Cache-Control", "public, max-age=5");
+    res.json(cached);
+    return;
+  }
   try {
     const skills = getAllSkills();
-    res.json({ skills, count: skills.length });
+    const data = { skills, count: skills.length };
+    setCache("skills", data);
+    res.set("Cache-Control", "public, max-age=5");
+    res.json(data);
   } catch {
     res.status(500).json({ error: "Database error" });
   }
@@ -125,6 +146,12 @@ router.post("/skills/register", (req: Request, res: Response) => {
 // Uses PinionClient to fetch USDC balance of the ADDRESS env var wallet
 // Returns { balance_usdc: string, address: string }
 router.get("/wallet/balance", async (_req: Request, res: Response) => {
+  const cached = fromCache<{ balance_usdc: string; address: string }>("wallet:balance", 15_000);
+  if (cached) {
+    res.set("Cache-Control", "public, max-age=15");
+    res.json(cached);
+    return;
+  }
   try {
     const pinion = getPinion();
     const address = process.env.ADDRESS ?? pinion.address;
@@ -135,7 +162,10 @@ router.get("/wallet/balance", async (_req: Request, res: Response) => {
     const balances = d.balances as Record<string, string> | undefined;
     const balance_usdc = balances?.USDC ?? String(d.usdc ?? "0");
 
-    res.json({ balance_usdc, address });
+    const data = { balance_usdc, address };
+    setCache("wallet:balance", data);
+    res.set("Cache-Control", "public, max-age=15");
+    res.json(data);
   } catch {
     res.status(500).json({ error: "Failed to fetch wallet balance" });
   }
@@ -216,6 +246,12 @@ router.get("/skills/:name/health", async (req: Request, res: Response) => {
 // GET /analytics
 // Aggregated marketplace statistics derived live from the registry
 router.get("/analytics", (_req: Request, res: Response) => {
+  const cached = fromCache("analytics", 10_000);
+  if (cached) {
+    res.set("Cache-Control", "public, max-age=10");
+    res.json(cached);
+    return;
+  }
   try {
     const skills = getAllSkills();
 
@@ -239,14 +275,17 @@ router.get("/analytics", (_req: Request, res: Response) => {
       categories[s.category] = (categories[s.category] ?? 0) + 1;
     }
 
-    res.json({
+    const data = {
       total_skills,
       total_calls,
       total_revenue_usd,
       top_skills,
       categories,
       last_updated: new Date().toISOString(),
-    });
+    };
+    setCache("analytics", data);
+    res.set("Cache-Control", "public, max-age=10");
+    res.json(data);
   } catch {
     res.status(500).json({ error: "Database error" });
   }

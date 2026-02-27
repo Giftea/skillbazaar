@@ -111,3 +111,5 @@ server.add(
 server.listen(4002);
 console.log("Wallet Scorer skill running on port 4002");
 process.on('unhandledRejection', (err) => console.error('[wallet-scorer] Unhandled:', err));
+process.on('SIGTERM', () => { console.log('[wallet-scorer] Shutting down...'); process.exit(0); });
+process.on('SIGINT',  () => { console.log('[wallet-scorer] Shutting down...'); process.exit(0); });

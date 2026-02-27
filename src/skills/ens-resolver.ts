@@ -189,3 +189,5 @@ server.add(
 server.listen(4004);
 console.log("ENS Resolver skill running on port 4004");
 process.on('unhandledRejection', (err) => console.error('[ens-resolver] Unhandled:', err));
+process.on('SIGTERM', () => { console.log('[ens-resolver] Shutting down...'); process.exit(0); });
+process.on('SIGINT',  () => { console.log('[ens-resolver] Shutting down...'); process.exit(0); });

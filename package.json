@@ -15,6 +15,7 @@
     "dev:frontend": "cd src/frontend && npm run dev",
     "demo": "tsx src/client/demo.ts",
     "test": "tsx src/client/demo.ts",
+    "healthcheck": "tsx src/scripts/healthcheck.ts",
     "build": "tsc && cd src/frontend && npm run build",
     "mcp": "tsx src/mcp/server.ts",
     "cli": "tsx src/cli/publish.ts",
