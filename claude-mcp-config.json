@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "skillbazaar": {
+      "command": "npx",
+      "args": ["tsx", "/Users/giftea/Documents/HACKATHONS/pinion-os/skillbazaar/src/mcp/server.ts"],
+      "env": {
+        "PINION_PRIVATE_KEY": "0xYOUR_KEY",
+        "ADDRESS": "0xYOUR_ADDRESS"
+      }
+    }
+  }
+}

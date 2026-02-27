@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+src/frontend/node_modules/
+
+# Build output
+dist/
+
+# Environment — never commit private keys
+.env
+
+# SQLite database — regenerated on first run
+data/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
