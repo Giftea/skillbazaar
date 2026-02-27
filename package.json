@@ -17,6 +17,7 @@
     "test": "tsx src/client/demo.ts",
     "healthcheck": "tsx src/scripts/healthcheck.ts",
     "build": "tsc && cd src/frontend && npm run build",
+    "start": "concurrently -n marketplace,skills -c cyan,magenta \"tsx src/marketplace/server.ts\" \"tsx src/skills/contract-auditor.ts & tsx src/skills/wallet-scorer.ts & tsx src/skills/gas-estimator.ts & tsx src/skills/ens-resolver.ts\"",
     "mcp": "tsx src/mcp/server.ts",
     "cli": "tsx src/cli/publish.ts",
     "start:marketplace": "node dist/marketplace/server.js"
