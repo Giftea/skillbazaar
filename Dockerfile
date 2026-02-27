@@ -10,7 +10,7 @@ RUN npm install
 
 # Install frontend dependencies
 COPY src/frontend/package*.json ./src/frontend/
-RUN cd src/frontend && npm install
+RUN cd src/frontend && rm -f package-lock.json && npm install
 
 # Copy all source files
 COPY . .
