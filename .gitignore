@@ -4,12 +4,15 @@ src/frontend/node_modules/
 
 # Build output
 dist/
+src/frontend/dist/
 
 # Environment — never commit private keys
 .env
 
 # SQLite database — regenerated on first run
-data/
+data/skills.db
+data/skills.db-shm
+data/skills.db-wal
 
 # OS / editor
 .DS_Store

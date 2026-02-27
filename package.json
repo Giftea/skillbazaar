@@ -14,7 +14,8 @@
     "dev:mcp": "tsx src/mcp/server.ts",
     "dev:frontend": "cd src/frontend && npm run dev",
     "demo": "tsx src/client/demo.ts",
-    "build": "tsc",
+    "test": "tsx src/client/demo.ts",
+    "build": "tsc && cd src/frontend && npm run build",
     "mcp": "tsx src/mcp/server.ts",
     "cli": "tsx src/cli/publish.ts",
     "start:marketplace": "node dist/marketplace/server.js"
