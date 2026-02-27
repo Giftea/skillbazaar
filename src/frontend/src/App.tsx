@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import StatsBar from './components/StatsBar';
 import SkillCard from './components/SkillCard';
 import TryItModal from './components/TryItModal';
 import AnalyticsPanel from './components/AnalyticsPanel';
+import RegisterModal from './components/RegisterModal';
+import ToastContainer from './components/Toast';
+import type { ToastItem } from './components/Toast';
 import type { Skill } from './types';
 
 export default function App() {
@@ -11,9 +14,20 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  useEffect(() => {
-    fetch('/api/skills')
+  const addToast = useCallback((message: string, type: 'success' | 'error') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
+
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const fetchSkills = useCallback(() => {
+    return fetch('/api/skills')
       .then((r) => r.json())
       .then((data: { skills: Skill[] }) => {
         setSkills(data.skills);
@@ -25,15 +39,22 @@ export default function App() {
       });
   }, []);
 
+  useEffect(() => { fetchSkills(); }, [fetchSkills]);
+
+  function handleExecuteSuccess(paidUsd: number) {
+    addToast(`✅ Skill executed — paid $${paidUsd.toFixed(2)} USDC`, 'success');
+    fetchSkills(); // refresh usage counts
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <Header />
+      <Header onRegister={() => setShowRegister(true)} />
 
       <StatsBar skills={skills} loading={loading} />
 
       {loading && (
         <div className="loading-grid">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="skeleton-card" />
           ))}
         </div>
@@ -58,15 +79,7 @@ export default function App() {
             ))}
           </div>
 
-          {/* Divider */}
-          <div
-            style={{
-              maxWidth: 1100,
-              margin: '8px auto 24px',
-              padding: '0 24px',
-              borderTop: '1px solid var(--border)',
-            }}
-          />
+          <div style={{ maxWidth: 1100, margin: '8px auto 24px', padding: '0 24px', borderTop: '1px solid var(--border)' }} />
 
           <AnalyticsPanel skills={skills} />
         </>
@@ -76,8 +89,20 @@ export default function App() {
         <TryItModal
           skill={selectedSkill}
           onClose={() => setSelectedSkill(null)}
+          onSuccess={handleExecuteSuccess}
+          onError={(msg) => addToast(msg, 'error')}
         />
       )}
+
+      {showRegister && (
+        <RegisterModal
+          onClose={() => setShowRegister(false)}
+          onSuccess={(msg) => { addToast(msg, 'success'); fetchSkills(); }}
+          onError={(msg) => addToast(msg, 'error')}
+        />
+      )}
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

@@ -165,6 +165,27 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
   }
 });
 
+// GET /skills/:name/health
+// Probes the skill server's port with a 2s timeout.
+// Any HTTP response (even 402/404) means the server is online.
+router.get("/skills/:name/health", async (req: Request, res: Response) => {
+  const skill = getSkillByName(req.params.name);
+  if (!skill) {
+    res.status(404).json({ online: false, error: "Skill not found" });
+    return;
+  }
+  const baseUrl = `http://localhost:${skill.port}`;
+  try {
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 2000);
+    await fetch(baseUrl, { signal: ctrl.signal });
+    clearTimeout(timeout);
+    res.json({ online: true, skill: skill.name, port: skill.port });
+  } catch (err) {
+    res.json({ online: false, skill: skill.name, port: skill.port });
+  }
+});
+
 // GET /analytics
 // Aggregated marketplace statistics derived live from the registry
 router.get("/analytics", (_req: Request, res: Response) => {
