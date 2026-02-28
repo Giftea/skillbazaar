@@ -19,18 +19,8 @@ export default function Header({ onRegister }: Props) {
   const balance = useBalance();
   return (
     <header style={{ borderBottom: '1px solid var(--border)', padding: '0 24px' }}>
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 60,
-          gap: 16,
-        }}
-      >
-       
+      <div className="header-inner">
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
@@ -43,40 +33,30 @@ export default function Header({ onRegister }: Props) {
             ⚡
           </div>
           <div>
-            <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
+            <div className="header-brand" style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>
               SkillBazaar
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -2 }}>
+            <div className="header-subtitle" style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -2 }}>
               Pay-per-use AI skills on Base
             </div>
           </div>
         </div>
 
-    
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="header-actions">
           <button
             onClick={onRegister}
             className="register-btn"
           >
-            + Register Skill
+            <span className="register-btn-plus">+</span> Register Skill
           </button>
 
-          <div
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '6px 12px',
-              background: 'rgba(34, 197, 94, 0.08)',
-              border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: 20,
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <div className="header-network">
             <div className="live-dot" />
-            <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 500 }}>
+            <span className="header-network-label" style={{ fontSize: 12, color: 'var(--green)', fontWeight: 500 }}>
               Base Mainnet
             </span>
             <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
-              · {balance} USDC
+              <span className="header-network-sep">· </span>{balance} USDC
             </span>
           </div>
         </div>
