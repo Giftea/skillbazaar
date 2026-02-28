@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
+import { mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import type { SkillRecord, RegisterSkillPayload } from "../shared/types.js";
 
@@ -51,6 +52,7 @@ const SEED_SKILLS: RegisterSkillPayload[] = [
 // Public API
 
 export function initDB(): void {
+  mkdirSync(path.dirname(DB_PATH), { recursive: true });
   db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
 
