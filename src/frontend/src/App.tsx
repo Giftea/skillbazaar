@@ -6,6 +6,7 @@ import TryItModal from './components/TryItModal';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import RegisterModal from './components/RegisterModal';
 import ToastContainer from './components/Toast';
+import Footer from './components/Footer';
 import type { ToastItem } from './components/Toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import type { Skill } from './types';
@@ -52,6 +53,8 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Header onRegister={() => setShowRegister(true)} />
 
+      
+
       <StatsBar skills={skills} loading={loading} />
 
       {loading && (
@@ -77,6 +80,7 @@ export default function App() {
 
       {!loading && !error && (
         <>
+
           <div className="skills-grid">
             {skills.map((skill) => (
               <SkillCard
@@ -109,6 +113,8 @@ export default function App() {
           onError={(msg) => addToast(msg, 'error')}
         />
       )}
+
+      <Footer />
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>

@@ -122,6 +122,34 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
 
           {result && (
             <div>
+              {result.status === 200 && (
+                <div className="payment-confirmed">
+                  <div className="payment-confirmed-top">
+                    <svg className="checkmark-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle className="checkmark-circle" cx="26" cy="26" r="24" />
+                      <path className="checkmark-check" d="M14 27 L21 34 L38 17" />
+                    </svg>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--green)' }}>
+                      Payment Confirmed
+                    </span>
+                  </div>
+                  <div className="tx-info">
+                    {(
+                      [
+                        ['Paid',    `$${skill.price_usd.toFixed(2)} USDC`],
+                        ['Network', 'Base L2'],
+                        ['Method',  'x402 EIP-3009'],
+                        ['Status',  '✅ Settled'],
+                      ] as [string, string][]
+                    ).map(([k, v]) => (
+                      <div key={k} className="tx-row">
+                        <span className="tx-key">{k}</span>
+                        <span className="tx-val">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Response</div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: statusColor }}>
@@ -130,7 +158,9 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
                   {result.status === 200 && ` · Paid $${skill.price_usd.toFixed(2)} USDC`}
                 </div>
               </div>
-              <JsonViewer data={result.data} />
+              <div className={result.status === 200 ? 'result-flash-wrap' : ''}>
+                <JsonViewer data={result.data} />
+              </div>
             </div>
           )}
         </div>
