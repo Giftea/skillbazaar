@@ -7,6 +7,7 @@ import {
   incrementUsage,
 } from "./registry.js";
 import type { SkillRecord, RegisterSkillPayload } from "../shared/types.js";
+import { containsProfanity } from "../shared/profanity.js";
 
 let _pinion: PinionClient | null = null;
 function getPinion(): PinionClient {
@@ -117,6 +118,11 @@ router.post("/skills/register", (req: Request, res: Response) => {
     res.status(400).json({
       error: "Missing required fields: name, description, endpoint, price_usd, publisher_wallet, category, port",
     });
+    return;
+  }
+
+  if (containsProfanity(name) || containsProfanity(description)) {
+    res.status(400).json({ error: "Skill name or description contains inappropriate language" });
     return;
   }
 

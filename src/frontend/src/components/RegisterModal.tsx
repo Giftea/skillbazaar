@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { containsProfanity } from '../utils/profanity';
 
 interface Props {
   onClose: () => void;
@@ -44,7 +45,9 @@ export default function RegisterModal({ onClose, onSuccess, onError }: Props) {
   function validate(): boolean {
     const e: Partial<FormState> = {};
     if (!/^[a-z][a-z0-9-]*$/.test(form.name.trim())) e.name = 'Lowercase letters, numbers, hyphens only';
+    else if (containsProfanity(form.name.trim())) e.name = 'Inappropriate language is not allowed';
     if (form.description.trim().length < 20) e.description = 'At least 20 characters';
+    else if (containsProfanity(form.description.trim())) e.description = 'Inappropriate language is not allowed';
     if (!/^0x[0-9a-fA-F]{40}$/.test(form.publisher_wallet.trim())) e.publisher_wallet = 'Valid 0x address required';
     const price = parseFloat(form.price_usd);
     if (isNaN(price) || price < 0.001 || price > 10) e.price_usd = '$0.001 – $10.00';
