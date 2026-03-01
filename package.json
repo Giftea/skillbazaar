@@ -19,6 +19,7 @@
     "build": "tsc && cd src/frontend && npm run build",
     "start": "concurrently -n marketplace,skills -c cyan,magenta \"tsx src/marketplace/server.ts\" \"tsx src/skills/contract-auditor.ts & tsx src/skills/wallet-scorer.ts & tsx src/skills/gas-estimator.ts & tsx src/skills/ens-resolver.ts\"",
     "mcp": "tsx src/mcp/server.ts",
+    "build:mcp": "tsc --outDir dist src/mcp/server.ts --esModuleInterop --skipLibCheck --module commonjs --moduleResolution node",
     "cli": "tsx src/cli/publish.ts",
     "start:marketplace": "node dist/marketplace/server.js"
   },
@@ -41,7 +42,8 @@
     "@types/node": "^20.14.0",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.3"
   }
 }

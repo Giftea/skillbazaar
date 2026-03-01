@@ -6,7 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-const MARKETPLACE = "http://localhost:3000";
+const MARKETPLACE = "http://localhost:3000/api";
 
 // Fetch with 8s timeout — prevents the MCP process from hanging
 async function fetchWithTimeout(url: string, opts: RequestInit = {}): Promise<Response> {
@@ -247,5 +247,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 process.on('unhandledRejection', (err) => console.error('[skillbazaar-mcp] Unhandled:', err));
 process.on('uncaughtException', (err) => console.error('[skillbazaar-mcp] Uncaught:', err));
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+main().catch((err) => {
+  console.error('[skillbazaar-mcp] Fatal error:', err);
+  process.exit(1);
+});

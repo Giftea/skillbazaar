@@ -7,7 +7,7 @@ SkillBazaar is an open marketplace where anyone can publish and monetize on-chai
 
 ## Demo
 
-[▶ Watch the demo video](https://your-demo-link-here)
+[▶ Watch the demo video](https://www.youtube.com/watch?v=l3wXdrD_Uoo)
 
 ## Architecture
 

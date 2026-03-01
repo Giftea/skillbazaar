@@ -163,6 +163,12 @@ router.get("/wallet/balance", async (_req: Request, res: Response) => {
     const address = process.env.ADDRESS ?? pinion.address;
     const result = await pinion.skills.balance(address);
 
+    if (result.status !== 200) {
+      console.error("Pinion balance error:", result.status, result.data);
+      res.status(502).json({ error: "Failed to fetch wallet balance", detail: result.data });
+      return;
+    }
+
     // SDK returns { status, data } — data shape: { balances: { USDC, ETH } } or flat { usdc, eth }
     const d = (result.data ?? {}) as unknown as Record<string, unknown>;
     const balances = d.balances as Record<string, string> | undefined;
