@@ -3,6 +3,7 @@ import Header from './components/Header';
 import StatsBar from './components/StatsBar';
 import SkillCard from './components/SkillCard';
 import TryItModal from './components/TryItModal';
+import AuditReportModal from './components/AuditReportModal';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import RegisterModal from './components/RegisterModal';
 import ToastContainer from './components/Toast';
@@ -18,6 +19,7 @@ export default function App() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [auditReport, setAuditReport] = useState<unknown | null>(null);
 
   const addToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Date.now();
@@ -45,15 +47,13 @@ export default function App() {
 
   function handleExecuteSuccess(paidUsd: number) {
     addToast(`✅ Skill executed — paid $${paidUsd.toFixed(2)} USDC`, 'success');
-    fetchSkills(); // refresh usage counts
+    fetchSkills();
   }
 
   return (
     <ErrorBoundary>
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Header onRegister={() => setShowRegister(true)} />
-
-      
 
       <StatsBar skills={skills} loading={loading} />
 
@@ -80,7 +80,6 @@ export default function App() {
 
       {!loading && !error && (
         <>
-
           <div className="skills-grid">
             {skills.map((skill) => (
               <SkillCard
@@ -103,6 +102,14 @@ export default function App() {
           onClose={() => setSelectedSkill(null)}
           onSuccess={handleExecuteSuccess}
           onError={(msg) => addToast(msg, 'error')}
+          onAuditResult={(data) => { setAuditReport(data); }}
+        />
+      )}
+
+      {auditReport && (
+        <AuditReportModal
+          report={auditReport as Parameters<typeof AuditReportModal>[0]['report']}
+          onClose={() => setAuditReport(null)}
         />
       )}
 

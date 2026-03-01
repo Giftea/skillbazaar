@@ -12,7 +12,7 @@ import { createSkillServer, skill } from "pinion-os/server";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { Request, Response } from "express";
 
-const MAINNET_RPC = "https://eth.mainnet.gateway.fm";
+const MAINNET_RPC = "https://ethereum.publicnode.com";
 const ENS_REGISTRY = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
 const PAY_TO = process.env.ADDRESS ?? "";
@@ -180,7 +180,7 @@ server.add(
           });
         }
       } catch {
-        res.status(503).json({ error: "RPC unavailable", fallback: true, message: "Could not reach Base network" });
+        res.status(503).json({ error: "RPC unavailable", fallback: true, message: "Could not reach Ethereum mainnet" });
       }
     },
   })

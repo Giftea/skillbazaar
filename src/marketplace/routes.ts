@@ -158,7 +158,7 @@ router.get("/wallet/balance", async (_req: Request, res: Response) => {
     const result = await pinion.skills.balance(address);
 
     // SDK returns { status, data } — data shape: { balances: { USDC, ETH } } or flat { usdc, eth }
-    const d = (result.data ?? {}) as Record<string, unknown>;
+    const d = (result.data ?? {}) as unknown as Record<string, unknown>;
     const balances = d.balances as Record<string, string> | undefined;
     const balance_usdc = balances?.USDC ?? String(d.usdc ?? "0");
 
@@ -186,10 +186,10 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
 
   const { param } = req.body as { param?: string };
 
-  // Build concrete URL — replace :address or :token placeholder if param provided
+  // Build concrete URL — replace :address, :token, or :ensOrAddress placeholder if param provided
   let url = skill.endpoint;
   if (param) {
-    url = url.replace(/:address|:token/, encodeURIComponent(param));
+    url = url.replace(/:address|:token|:ensOrAddress/, encodeURIComponent(param));
   }
 
   // Convert price to USDC micro-units: $0.05 → 50000
@@ -198,7 +198,7 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
   try {
     const pinion = getPinion();
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Request timed out")), 10000)
+      setTimeout(() => reject(new Error("Request timed out")), 30000)
     );
     const result = await Promise.race([
       payX402Service(pinion.signer, url, { method: "GET", maxAmount }),
@@ -208,9 +208,11 @@ router.post("/skills/:name/execute", async (req: Request, res: Response) => {
     incrementUsage(skill.name);
 
     res.json({
-      result: result.data,
-      paid_usd: skill.price_usd,
+      status: 200,
+      data: result.data,
       skill: skill.name,
+      price_usd: skill.price_usd,
+      param: param ?? null,
     });
   } catch (err) {
     const msg = (err as Error).message ?? "";

@@ -7,14 +7,16 @@ interface Props {
   onClose: () => void;
   onSuccess: (paidUsd: number) => void;
   onError: (message: string) => void;
+  onAuditResult?: (data: unknown) => void;
 }
 
-export default function TryItModal({ skill, onClose, onSuccess, onError }: Props) {
+export default function TryItModal({ skill, onClose, onSuccess, onError, onAuditResult }: Props) {
   const needsParam = /:address|:token|:ensOrAddress/.test(skill.endpoint);
   const [param, setParam] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ExecuteResult | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const isAuditor = skill.name === 'contract-auditor';
 
   // Close on Escape
   useEffect(() => {
@@ -24,13 +26,21 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
   }, [onClose]);
 
   async function execute() {
-    if (needsParam && !/^(0x[0-9a-fA-F]{40}|.+\.eth)$/.test(param.trim())) {
-      setValidationError('Enter a valid 0x EVM address or ENS name (e.g. vitalik.eth).');
+    const acceptsEns = skill.endpoint.includes(':ensOrAddress');
+    const pattern = acceptsEns
+      ? /^(0x[0-9a-fA-F]{40}|.+\.eth)$/
+      : /^0x[0-9a-fA-F]{40}$/;
+    const hint = acceptsEns
+      ? 'Enter a valid 0x EVM address or ENS name (e.g. vitalik.eth).'
+      : 'Enter a valid 0x EVM address (40 hex chars).';
+    if (needsParam && !pattern.test(param.trim())) {
+      setValidationError(hint);
       return;
     }
     setValidationError(null);
     setLoading(true);
     setResult(null);
+
     try {
       const res = await fetch(`/api/skills/${skill.name}/execute`, {
         method: 'POST',
@@ -38,12 +48,18 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
         body: JSON.stringify({ param: needsParam ? param.trim() : null }),
       });
       const json = await res.json() as ExecuteResult & { error?: string };
-      setResult(json);
+
       if (res.ok) {
         onSuccess(skill.price_usd);
+        if (isAuditor && onAuditResult) {
+          onAuditResult(json.data);
+          onClose();
+          return;
+        }
       } else {
         onError(`❌ Execution failed: ${json.error ?? res.statusText}`);
       }
+      setResult(json);
     } catch {
       onError('❌ Network error — is the marketplace server running?');
     } finally {
@@ -88,7 +104,16 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
             </div>
           </div>
 
- 
+          {isAuditor && (
+            <div style={{
+              fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px',
+              background: 'rgba(255,255,255,0.03)', borderRadius: 6,
+              border: '1px solid var(--border)', lineHeight: 1.5,
+            }}>
+              Results open in a full audit report. This may take 10–20s while Claude analyzes the source code.
+            </div>
+          )}
+
           {needsParam && (
             <div>
               <label htmlFor="param" style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
@@ -114,9 +139,9 @@ export default function TryItModal({ skill, onClose, onSuccess, onError }: Props
 
           <button className="pay-btn" onClick={execute} disabled={loading}>
             {loading ? (
-              <><div className="spinner" /> Calling skill…</>
+              <><div className="spinner" /> {isAuditor ? 'Auditing with Claude…' : 'Calling skill…'}</>
             ) : (
-              <>⚡ Execute — ${skill.price_usd.toFixed(2)} USDC</>
+              <>⚡ {isAuditor ? 'Run AI Audit' : 'Execute'} — ${skill.price_usd.toFixed(2)} USDC</>
             )}
           </button>
 

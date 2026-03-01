@@ -19,13 +19,26 @@ export interface MarketplaceResponse<T> {
   timestamp: string;
 }
 
+export interface AuditFinding {
+  severity: "critical" | "high" | "medium" | "low" | "info";
+  title: string;
+  description: string;
+}
+
 export interface ContractAuditResult {
   address: string;
   is_contract: boolean;
-  eth_balance: string; 
+  is_verified: boolean;
+  contract_name?: string;
+  compiler_version?: string;
+  deployer?: string;
+  eth_balance: string;
   tx_count: number;
-  risk_signals: string[];
-  score: "low" | "medium" | "high";
+  source_available: boolean;
+  findings: AuditFinding[];
+  risk_score: "critical" | "high" | "medium" | "low" | "safe";
+  summary: string;
+  recommendations: string[];
   analyzed_at: string;
 }
 
